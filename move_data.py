@@ -33,10 +33,10 @@ def read_dirs(in_dir, out_dir, gzip_ext, redo):
     
     for doc in os.scandir(in_dir):
         if os.path.isdir(doc):
-            read_dirs(doc)
+            read_dirs(doc, out_dir, gzip_ext, redo)
         elif doc.name.lower().endswith(gzip_ext) and "read" not in doc.name.lower():
             doc_name = os.path.splitext(doc.name)[0]
-            output_path = os.path.join(out_dir, doc_name+'.json')
+            output_path = os.path.join(out_dir, 'seperate_files', doc_name+'.json')
             if os.path.isfile(output_path) and not REDO: continue
             
             print('Decompressing', doc.path, 'to', output_path)
@@ -96,4 +96,20 @@ def parse_doc(docs):
     else: errors = None
     return json_list, errors
 
-read_dirs(INPUT_DIRECTORY, OUTPUT_DIRECTORY, GZIP_EXTENSION)
+def combine_jsons(out_dir):
+    json_docs = []
+    json_file_dir = os.path.join(out_dir, 'seperate_files')
+    for doc in os.scandir(json_file_dir):
+        if "complete_collection" not in doc.name.lower():
+            doc_name = os.path.splitext(doc.name)[0]
+            output_path = os.path.join(json_file_dir, doc_name+'.json')
+            with open(output_path, 'r') as f:
+                json_docs += json.load(f)
+        
+    output_path = os.path.join(out_dir, 'complete_collection.json')
+    with open(output_path, 'w+') as output_file:
+        json.dump(json_docs, output_file, indent=4, sort_keys=True)
+        
+        
+read_dirs(INPUT_DIRECTORY, OUTPUT_DIRECTORY, GZIP_EXTENSION, REDO)
+combine_jsons(OUTPUT_DIRECTORY)
