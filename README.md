@@ -39,3 +39,13 @@ Score calculation
 * Max between sentences or header and content
 * First sentence of header
 * Sum or Average of sentences or header and content
+
+## TO DO
+### Word embeddings
+* extra comparison methods
+* Make pre-processing avaible for whole documentss
+* seperate sentences/distinction between header and content if avaible
+* Adapt the score calculation/comparison methods to account for earliers said seperation/distinction
+
+### Contextual
+* everything listed
