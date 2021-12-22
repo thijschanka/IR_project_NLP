@@ -97,6 +97,11 @@ def parse_doc(docs):
     return json_list, errors
 
 def combine_jsons(out_dir):
+    """Combines the generated jsons of the different files into one large json.
+
+    Args:
+        out_dir (String): the relative path to the output dir
+    """    
     json_docs = []
     json_file_dir = os.path.join(out_dir, 'seperate_files')
     for doc in os.scandir(json_file_dir):
