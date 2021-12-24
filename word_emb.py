@@ -117,10 +117,10 @@ def train_embeddings(data, tokenize=True, max_epochs=20, vec_size=100, dm=0, mvs
     
     # if dm == 0 it is bag of words else it preserves word order
     print("tokenize")
-    #if tokenize:
-    #    data = [TaggedDocument(words=word_tokenize(doc["contents"].lower()), tags=[doc["id"]]) for doc in data]
-    #else:
-    #    data = [TaggedDocument(words=doc["contents"].lower(), tags=[doc["id"]]) for doc in data]
+    if tokenize:
+        data = [TaggedDocument(words=word_tokenize(doc["contents"].lower()), tags=[doc["id"]]) for doc in data]
+    else:
+        data = [TaggedDocument(words=doc["contents"].lower(), tags=[doc["id"]]) for doc in data]
     
     print("define model")
     model = Doc2Vec(vector_size=vec_size,
@@ -140,7 +140,7 @@ def train_embeddings(data, tokenize=True, max_epochs=20, vec_size=100, dm=0, mvs
     print("Model Saved")
 
 # Perform the task
-def main(model_loc = "https://tfhub.dev/google/nnlm-en-dim128/2", n_hits = 10000, it = 'Q0', run='wrb04', local_model=False):
+def main(df, model_loc = "https://tfhub.dev/google/nnlm-en-dim128/2", n_hits = 10000, it = 'Q0', run='wrb04', local_model=False, out_file = "./output/results/word_emb.run"):
     print("load data")
     df = load_data(tokenize=True)
     queries = load_queries()
@@ -165,24 +165,15 @@ def main(model_loc = "https://tfhub.dev/google/nnlm-en-dim128/2", n_hits = 10000
             
             results.append([str(q_id), str(it), str(d), str(i+1), str(score), str(run)])
     output_str = "\n".join([' '.join(i) for i in results])
-    open("./output/results/word_emb_dm1_vec512.run", "w").write(output_str)
+    open(out_file, "w").write(output_str)
 
-RETRAIN = True
-TOKENIZE = True
+RETRAIN = False
 
 if RETRAIN:
     with open("./output/json_collection/complete_collection.json", encoding='utf8') as f:
         data = json.load(f)
-    
-    if TOKENIZE:
-        print("tokenize")
-        data = [TaggedDocument(words=word_tokenize(doc["contents"].lower()), tags=[doc["id"]]) for doc in data]
-    else:
-        data = [TaggedDocument(words=doc["contents"].lower(), tags=[doc["id"]]) for doc in data]
-    
-    print(torch.cuda.get_device_name(0))
-    train_embeddings(data, tokenize=True, max_epochs=20, vec_size=200, dm=1, mvs=None, dbow=0, input="contents", name='./output/results/word_emb_dm1_vec200.model')
-    train_embeddings(data, tokenize=True, max_epochs=20, vec_size=200, dm=0, mvs=None, dbow=0, input="contents", name='./output/results/word_emb_dm0_vec200.model')
-    train_embeddings(data, tokenize=True, max_epochs=20, vec_size=100, dm=1, mvs=None, dbow=0, input="contents", name='./output/results/word_emb_dm1_vec100.model')
 
-main(model_loc = "./output/dm_robust04_dm1_vec512.model", local_model=True)
+    print(torch.cuda.get_device_name(0))
+    train_embeddings(data, tokenize=True, max_epochs=20, vec_size=200, dm=1, mvs=None, dbow=0, input="contents", model_name='./output/results/word_emb_dm1_vec200.model')
+
+main(df, model_loc = "./output/word_emb_dm1_vec100.model", local_model=True, out_file="./output/results/word_emb_dm1_vec100.run")
